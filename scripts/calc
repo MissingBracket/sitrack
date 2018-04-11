@@ -1,0 +1,4 @@
+# $1 defines input directory
+# $s defines output file
+cd $1
+find -type f -exec md5sum {} + >> ~/scriptout

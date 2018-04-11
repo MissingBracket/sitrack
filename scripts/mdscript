@@ -1,0 +1,13 @@
+FILENAME=md5_output
+DIRECTORY=$1
+touch $FILENAME
+echo "Ran Differential file generation from $0" >>$FILENAME
+MESSAGE="Differential file generated @$(date)"
+echo $MESSAGE
+echo $MESSAGE >> $FILENAME
+echo -e "File checksum \t FileName"
+cd $DIRECTORY
+find -type f -exec md5sum {} + >> ~/$FILENAME
+echo "PGS:[$(md5sum ~/$FILENAME)]" >> ~/$FILENAME
+echo "Done Generating"
+exit 0
