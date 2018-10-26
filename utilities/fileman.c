@@ -1,8 +1,11 @@
 #include "./dateman.h"
 #include "./fileman.h"
+#include <errno.h>
 
 const char* config_dir = "./config/dirs";
 const char* logs_dir = "./Log";
+
+//char* currentLogDir;
 
 // Loads standard config file
 char **get_directories_from_config(){
@@ -38,6 +41,8 @@ char **get_directories_from_custom_config(char * custom_config){
 		printf("%s\n", buffer);
 	}
 	fclose(confile);
+
+	return NULL;
 }
 
 void printfromfile(){
@@ -81,11 +86,12 @@ int calculate_and_save(char *dir){
 }
 // Returns all calculated hashes
 char** calculate_integrity(char **dirs){
-for(int i=0; dirs[i]; i++){
+	for(int i=0; dirs[i]; i++){
 	
-}
+	}
 
 }
+
 int stringlen(char* str){
 	int count = 0;
 	for (int i = 0; str[i]; ++i)
@@ -94,15 +100,57 @@ int stringlen(char* str){
 	}
 	return count;
 }
-void init_log_directories(){
+
+int init_log_directories(){
 	print_current_date();
 	struct stat st = {0};
+	int umaskResult = umask(0);
 	char namebuffer[50] = {'\0'};
+	printf("%s%o\n","Umask has been set: ", umaskResult);
 	int len = sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
 	printf("Result of query : %s\n", namebuffer);
-	if (stat("./Log/2018/3", &st) == -1) {
-	    printf("No such directory\n");
-	   int createstatus = mkdir("./Log/2018/3", 0700); // Cannot create directory
-	   printf("created?L %d\n", createstatus);
+	// Log/Month
+	sprintf(namebuffer, "%s/%d", logs_dir, get_year());
+
+	// if year doesn't exists neither does month
+	if(stat(namebuffer, &st) < 0){
+		int createstatus = mkdir(namebuffer, 0700);
+		if(createstatus != -1)	{
+			for(int i =0; i < 50; i++)
+	   			namebuffer[i] = '\0';
+	   		sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
+	   		//printf("Creating new month directory\n");
+	   		createstatus = mkdir(namebuffer, 0700);
+	   		if(createstatus != -1){
+	   			printf("%s\n", "Created both year and month directories");
+	   			return 0;
+	   		}
+		}
+	}else{
+		//	Year exists - check and maybe create month
+		for(int i =0; i < 50; i++)
+	   		namebuffer[i] = '\0';
+	   	sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
+	   	//	if month doesn't exist create it
+	   	if(stat(namebuffer, &st) < 0){
+			int createstatus = mkdir(namebuffer, 0700);	   		
+			if (createstatus != -1)
+			{
+				printf("%s\n", "Created only month directory");
+				return 0;
+			}
+	   	}
+	   	else{
+	   		printf("%s\n", "No need to create anything.");
+	   		return 0;
+	   	}
 	}
+	fprintf(stderr, "%s%s Code :%d\n", "Failed whlie creating Log directories: ", strerror(errno), errno);
+	return -1;
+}
+
+char *get_current_log_directory(){
+	char* namebuffer = (char*)malloc(sizeof(char)*20);
+	sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
+	return namebuffer;
 }

@@ -32,7 +32,7 @@ void print_help(){
 	printf("Usage:\n");
 	printf("oversser [Mainparam][params]\n");
 	printf("Available parameters:\n");
-	printf(" -R\tRecalculate current integrity\n");
+	printf("\t-R\tRecalculate current integrity\n");
 	printf("\t-d [directory]\tcalculate Hashes only in given directory\n");
 	printf("\t-n\tDon't save hashes and print them to screen\n");
 	printf("\t-c\tRecalculate hashes and compare them with current\n");
@@ -142,7 +142,12 @@ int main(int argc, char* argv[]){
 	if(argc <2)
 		print_help();
 	int *active_switches = parse_arguments(argv,switches_available);
-	get_directories_from_custom_config("./file");
+	get_directories_from_custom_config("./dirs");
+	free(active_switches);
+	int logDir = init_log_directories();
+	
+	if(logDir > 0)
+		call_calculate_script("~/mdtests", get_current_log_directory()); // WORKS 
 	/*for (int i = 0; i < switches_available; ++i)
 	{
 		printf("%d\n", active_switches[i]);
@@ -154,11 +159,12 @@ int main(int argc, char* argv[]){
 	execute_script("script1");
 	get_directories_from_config();
 	*/
-	free(active_switches);
-	init_log_directories();
-	
+	/*
+	if(logDir != -1){
+	logEntries();
+	}
+	*/
 	//print_current_date();	//WORKS
-	//call_calculate_script("~/mdtests"); // WORKS
-	//init_directories(); //THROWS ERROR
+	
 	return 0;	//Exit Success
 }

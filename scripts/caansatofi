@@ -1,0 +1,6 @@
+# Calculate And Save To File
+# $1 defines input directory
+# $2 defines output file
+WORKINGDIR=$(pwd)
+cd $1
+find -type f -exec md5sum {} + >> "$WORKINGDIR/$2"

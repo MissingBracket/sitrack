@@ -25,4 +25,6 @@ char** calculate_integrity(char **dirs);
 //	Calculate length of string
 int stringlen(char* str);
 //	First run method, creates log directories and template files
-void init_log_directories();
+int init_log_directories();
+//	Returns directory path for current month log file
+char* get_current_log_directory();
