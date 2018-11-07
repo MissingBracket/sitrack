@@ -154,3 +154,19 @@ char *get_current_log_directory(){
 	sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
 	return namebuffer;
 }
+
+int add_file_to_tracked(char* directory){
+	int desc, save_result;
+	char *buffer_why_not = (char*)malloc(sizeof(char) * (stringlen(directory) + 1)); //	Is it safe?
+	sprintf(buffer_why_not, "%s\n", directory);
+	desc = open("./config/tracked", O_RDWR|O_APPEND);
+	save_result = write(desc, buffer_why_not, stringlen(buffer_why_not));
+	if(save_result < 0){
+		printf("%s Could not save to file\n", FAIL);
+		int stat = close(desc);
+		return -1;
+	}
+	int stat = close(desc);
+	
+	return 0;
+}

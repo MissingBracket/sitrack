@@ -4,6 +4,10 @@
 char *scripts_directory="./scripts/";
 
 int integrity_compromised(char* file){
+	char* currentLog = get_current_log_directory();
+	char hash_1[32], hash_2[32];
+	if(strcmp(hash_1, hash_2) < 0)
+		printf("%s\n", "Values are different");
 return 0;
 }
 int databse_integrity_compromised(){

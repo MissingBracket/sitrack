@@ -28,3 +28,5 @@ int stringlen(char* str);
 int init_log_directories();
 //	Returns directory path for current month log file
 char* get_current_log_directory();
+//	Adds a file to be tracked by the program
+int add_file_to_tracked(char* directory);
