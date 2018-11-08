@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -26,4 +25,4 @@ int count_length(char* string);
 //	Compare two checksums and output if they are the same
 int compare_checksums(char* sum1, char* sum2);
 //	Calls the sum calculating script with a parameter of given directory
-void call_calculate_script(char* directory, char* output);
+void call_calculate_script(char* directory, char* output, int d, int n, int c);

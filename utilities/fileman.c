@@ -1,6 +1,9 @@
 #include "./dateman.h"
 #include "./fileman.h"
+#include "./integrman.h"
 #include <errno.h>
+//	Quickly defined dynamic structure
+#include "./chain.h"
 
 const char* config_dir = "./config/dirs";
 const char* logs_dir = "./Log";
@@ -29,7 +32,8 @@ char **get_directories_from_config(){
 	fclose(confile);
 }
 // Loads User-specified config file
-char **get_directories_from_custom_config(char * custom_config){
+struct chain *get_directories_from_custom_config(char * custom_config){
+	struct chain *directories;
 	FILE* confile = fopen(custom_config, "r");
 	if(!confile){
 		printf("%s Could not open specified config file\n", FAIL);
@@ -38,11 +42,11 @@ char **get_directories_from_custom_config(char * custom_config){
 	char buffer[50];
 	while(!feof(confile)){
 		fscanf(confile, "%s\n" ,&buffer);
-		printf("%s\n", buffer);
+		directories = chain_insert(directories, "asd", 3);
 	}
 	fclose(confile);
-
-	return NULL;
+	//chain_print(directories);
+	return directories;
 }
 
 void printfromfile(){
@@ -111,7 +115,7 @@ int init_log_directories(){
 	printf("Result of query : %s\n", namebuffer);
 	// Log/Month
 	sprintf(namebuffer, "%s/%d", logs_dir, get_year());
-
+ 
 	// if year doesn't exists neither does month
 	if(stat(namebuffer, &st) < 0){
 		int createstatus = mkdir(namebuffer, 0700);
@@ -160,7 +164,7 @@ int add_file_to_tracked(char* directory){
 	char *buffer_why_not = (char*)malloc(sizeof(char) * (stringlen(directory) + 1)); //	Is it safe?
 	sprintf(buffer_why_not, "%s\n", directory);
 	desc = open("./config/tracked", O_RDWR|O_APPEND);
-	save_result = write(desc, buffer_why_not, stringlen(buffer_why_not));
+	save_result = write(desc, buffer_why_not, strlen(buffer_why_not));
 	if(save_result < 0){
 		printf("%s Could not save to file\n", FAIL);
 		int stat = close(desc);
@@ -169,4 +173,23 @@ int add_file_to_tracked(char* directory){
 	int stat = close(desc);
 	
 	return 0;
+}
+int save_calculation_for_files(char * output){
+	int changes = 0;
+	struct chain *ptr = NULL,
+			 *dirs = get_directories_from_custom_config("./dirs");
+	ptr = dirs;
+	//chain_print(ptr);
+	//return changes;
+	while(ptr != NULL){
+		//call_calculate_script(ptr->directory, output, 0, 0, 0);
+		printf("we're here : %s\n", ptr->directory);	
+		changes++;
+		ptr = ptr->next;
+	}
+	printf("%s\n", "we're done here");
+	free(dirs);
+	free(ptr);
+	
+	return changes;
 }

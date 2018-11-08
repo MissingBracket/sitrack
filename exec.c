@@ -28,7 +28,7 @@ Switches Convention map
 	Prints help message
 */
 void print_help(){
-	printf("Overseer program for Linux System integrity management\n");
+	printf("Overseer program for GNU / Linux System integrity management\n");
 	printf("Version: %.3f\t%s\n", program_version, details);
 	printf("Usage:\n");
 	printf("oversser [Mainparam][params]\n");
@@ -149,6 +149,7 @@ int * parse_arguments(char *args[], int size){
 					case 0:
 						printf("Recalculate for: %s\n", args[i]);
 						//	Call Recalculate function
+						save_calculation_for_files(get_current_log_directory());
 					break;
 					case 4:
 						printf("Track file: %s\n", args[i]);
@@ -193,7 +194,8 @@ int main(int argc, char* argv[]){
 		if(active_switches == NULL){
 			return -1;
 		}
-	get_directories_from_custom_config("./dirs");
+	//get_directories_from_custom_config("./dirs");
+	
 	/*int logDir = init_log_directories();
 	
 	if(logDir > 0)

@@ -33,10 +33,10 @@ int compare_checksums(char* sum1, char* sum2){
 int count_length(char* string){
 	return 1;
 }
-void call_calculate_script(char* directory, char *output){
+void call_calculate_script(char* directory, char *output, int d, int n, int c){
 	char full_directory[80] = {'\0'};
 	printf("parameters:%s and %s\n",directory, output);
-	snprintf(full_directory, 80, "/scripts/caansatofi %s %s/differential", directory, output);
+	snprintf(full_directory, 80, "./scripts/caansatofi %s %s/differential", directory, output);
 	printf("Call script with parameter:\t %s\n", full_directory);
 	system(full_directory);
 

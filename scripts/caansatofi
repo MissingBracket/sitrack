@@ -2,5 +2,6 @@
 # $1 defines input directory
 # $2 defines output file
 WORKINGDIR=$(pwd)
+echo "Ran on $(date) with parameter $1" >> "$WORKINGDIR/$2"
 cd $1
 find -type f -exec md5sum {} + >> "$WORKINGDIR/$2"
