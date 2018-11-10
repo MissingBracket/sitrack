@@ -3,46 +3,36 @@
 #include "./integrman.h"
 #include <errno.h>
 //	Quickly defined dynamic structure
-#include "./chain.h"
+#include "./list.h"
 
-const char* config_dir = "./config/dirs";
+char* config_dir = "./config/dirs";
 const char* logs_dir = "./Log";
 
 //char* currentLogDir;
 
 // Loads standard config file
-char **get_directories_from_config(){
-	FILE* confile = fopen(config_dir, "r");
-	if(!confile){
-		printf("%s Could not open config file\n", FAIL);
-		return NULL;
-	}
-	int lines;
-	fscanf(confile, "%d\n", &lines);
-	char **dirs = (char**)malloc(sizeof(char*) * lines);
-	
-	int current=0;
-	char buffer[50];
-	while(!feof(confile)){
-		fscanf(confile, "%s\n" ,&buffer);
-		dirs[current] = buffer;
-		current++;
-		printf("%s\n", buffer);
-	}
-	fclose(confile);
+struct list *get_directories_from_config(){
+	struct list *ptr = get_directories_from_custom_config(config_dir);
+	return ptr;
 }
 // Loads User-specified config file
-struct chain *get_directories_from_custom_config(char * custom_config){
-	struct chain *directories;
+struct list *get_directories_from_custom_config(char * custom_config){
+	struct list *directories = NULL;// = malloc(sizeof(struct chain));
 	FILE* confile = fopen(custom_config, "r");
 	if(!confile){
-		printf("%s Could not open specified config file\n", FAIL);
+		printf("%s Could not open specified config file: %s\n", FAIL, custom_config);
 		return NULL;
 	}
-	char buffer[50];
+	char buffer[256] = {'\0'};
+	//char *buffer;
 	while(!feof(confile)){
-		fscanf(confile, "%s\n" ,&buffer);
-		directories = chain_insert(directories, "asd", 3);
+		buffer[255]='\0';
+		fscanf(confile, "%s\n" ,buffer);
+		directories = list_insert(directories, buffer);
+		for(int i =0; i < 255; i++)
+			buffer[i] = '\0';
+
+	//printf("Buffer added : %s\n", buffer);
 	}
 	fclose(confile);
 	//chain_print(directories);
@@ -89,11 +79,12 @@ int calculate_and_save(char *dir){
 	return changes;
 }
 // Returns all calculated hashes
-char** calculate_integrity(char **dirs){
+char calculate_integrity(char **dirs){
 	for(int i=0; dirs[i]; i++){
 	
 	}
-
+	
+	return 'a';
 }
 
 int stringlen(char* str){
@@ -112,7 +103,7 @@ int init_log_directories(){
 	char namebuffer[50] = {'\0'};
 	printf("%s%o\n","Umask has been set: ", umaskResult);
 	int len = sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
-	printf("Result of query : %s\n", namebuffer);
+	printf("Result of query : %s with length of: %d\n", namebuffer, len);
 	// Log/Month
 	sprintf(namebuffer, "%s/%d", logs_dir, get_year());
  
@@ -160,36 +151,61 @@ char *get_current_log_directory(){
 }
 
 int add_file_to_tracked(char* directory){
-	int desc, save_result;
+	int desc, save_result, stat;
 	char *buffer_why_not = (char*)malloc(sizeof(char) * (stringlen(directory) + 1)); //	Is it safe?
 	sprintf(buffer_why_not, "%s\n", directory);
-	desc = open("./config/tracked", O_RDWR|O_APPEND);
+	desc = open("./config/dirs", O_RDWR|O_APPEND);
 	save_result = write(desc, buffer_why_not, strlen(buffer_why_not));
 	if(save_result < 0){
 		printf("%s Could not save to file\n", FAIL);
-		int stat = close(desc);
+		if((stat = close(desc)) < 0){
+			printf("Failed to close file.\n");
+			return -1;
+		}
 		return -1;
 	}
-	int stat = close(desc);
-	
+	if((stat = close(desc)) < 0)
+		return -1;
+	printf("Successfully appended %s to tracked file list.\n", directory);
 	return 0;
 }
-int save_calculation_for_files(char * output){
+
+void print_from_pointer(char * ptr){
+	printf("A value is : %s\n", ptr);
+}
+
+int save_calculation_for_files(char *output, char* input, int n, int c){
 	int changes = 0;
-	struct chain *ptr = NULL,
-			 *dirs = get_directories_from_custom_config("./dirs");
-	ptr = dirs;
-	//chain_print(ptr);
-	//return changes;
+	struct list *head= NULL;
+	struct list *ptr= NULL;
+	char *config_to_work_on;
+	
+	if(input != NULL)
+		config_to_work_on = input;
+	else
+		config_to_work_on = config_dir;
+	FILE *config_file = fopen(config_to_work_on, "r");
+	if(config_file == NULL){
+		printf("Configuration file does not exist: %s\n", config_to_work_on);
+		return -1;
+	}
+
+	while(!feof(config_file)){
+		char buffer[256] = {'\0'};
+		fscanf(config_file, "%s\n", buffer);
+		head = list_insert(head, buffer);
+	}
+	ptr = head;
+	fclose(config_file);
+	printf("Output argument: %s\n", output);
+	printf("Input argument: %s\n", input);
 	while(ptr != NULL){
-		//call_calculate_script(ptr->directory, output, 0, 0, 0);
-		printf("we're here : %s\n", ptr->directory);	
 		changes++;
+		printf("Val : %s\n", ptr->directory);
+		call_calculate_script(ptr->directory, output, 0, 0, 0);
 		ptr = ptr->next;
 	}
-	printf("%s\n", "we're done here");
-	free(dirs);
-	free(ptr);
-	
+	head = list_clear(head);
+	printf("Finished Calculating for %d entries.\n", changes);
 	return changes;
 }

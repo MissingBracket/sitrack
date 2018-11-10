@@ -1,8 +1,19 @@
+/*
+ ============================================================================
+ Name        : sitrack.c
+ Author      : Smileperience
+ Version     :
+ Copyright   : Distribute however ya wish
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
 #define bool int
 #define true 1
 #define false 0
 #define switches_available 16
-#define SWITCH_SAVE = 15;
+#define SWITCH_READ 0
+#define SWITCH_TRACK 4
+#define SWITCH_UNTRACK 8
 //	I try hard to make it clean. Don't mind this mess of comments please
 #include <string.h>
 #include <stdlib.h>
@@ -76,7 +87,7 @@ char* constr(char* a, char* b){
 	for (int i = 0; i < stringlen(a); ++i){
 	if(a[i] != '\0')result[i] = a[i];
 	}
-	
+
 	int x = 0;
 	for (int i = stringlen(a); i < total_len; ++i){
 		result[i] = b[x];
@@ -101,7 +112,88 @@ void calculate_and_compare(char *dir){
 /*
 	Sets flags for program functionality
 */
-int * parse_arguments(char *args[], int size){
+int parse_arguments(char *argv[], int argc){
+int switches[switches_available] = {0};
+char *READvalue = NULL, *TRACKvalue = NULL, *UNTRACKvalue = NULL;
+int index;
+int c;
+
+opterr = 0;
+int offset=0;
+
+	while ((c = getopt (argc, argv, "HhRTUncd:")) != -1)
+    switch (c)
+    	{
+    	case 'h':
+    	case 'H':
+    		print_help();
+    		return -1;
+		case 'R':
+			switches[SWITCH_READ] = 1;
+			offset = SWITCH_READ;
+		break;
+		case 'T':
+			switches[SWITCH_TRACK] = 1;
+			offset = SWITCH_TRACK;
+		break;
+		case 'U':
+			switches[SWITCH_UNTRACK] = 1;
+			offset = SWITCH_UNTRACK;
+		break;
+		case 'n':
+			switches[offset + 1] = 1;
+			//offset = 0;
+		break;
+		case 'c':
+			switches[offset + 2] = 1;
+			//offset = 0;
+		break;
+		case 'd':
+			switch(offset){
+				case SWITCH_READ:
+					READvalue = optarg;
+					offset = 0;
+				break;
+				case SWITCH_TRACK:
+					TRACKvalue = optarg;
+					offset = 0;
+				break;
+				case SWITCH_UNTRACK:
+					UNTRACKvalue = optarg;
+					offset = 0;
+				break;
+        }
+        //cvalue = optarg;
+        break;
+
+      	default:
+      		printf("Don't know what to do with -> %c <-\n", c);
+        	abort ();
+      }
+
+    if(switches[SWITCH_READ] > 0){
+    	if(READvalue != NULL){
+    		print_from_pointer(READvalue);
+    		save_calculation_for_files(get_current_log_directory(), READvalue, switches[2], switches[3]);
+
+    	}
+    	else
+    		save_calculation_for_files(get_current_log_directory(), NULL, switches[2], switches[3]);
+    }
+    if(switches[SWITCH_TRACK] > 0){
+    	if(TRACKvalue == NULL){
+    		printf("No file to track was specified.\n");
+    		return -1;
+    	}
+    	add_file_to_tracked(TRACKvalue);
+    }
+	if(switches[SWITCH_UNTRACK] > 0){
+
+	}
+    return 0;
+}
+
+int * old_parse_arguments(char *args[], int size){
 	bool *switches = (bool*)malloc(sizeof(bool)*16);
 	int offset = 0;
 	for(int i = 1 ; args[i]; i++){
@@ -143,13 +235,21 @@ int * parse_arguments(char *args[], int size){
 							return NULL;
 						break;
 					}
-			}else{	
-			//	Call functions here: 
+			}else{
+			//	Call functions here:
 				switch(offset){
 					case 0:
 						printf("Recalculate for: %s\n", args[i]);
 						//	Call Recalculate function
-						save_calculation_for_files(get_current_log_directory());
+						//if(switches[1] != 0)
+						char buf[256] = {'\0'};
+						//printf("Size of array: %d\n", sizeof(buf));
+						//printf("Size of args[]: %d\n", sizeof(args[i]));
+						strcpy(buf, *&args[i]);
+							printf("%s\n", buf);
+						//save_calculation_for_files(get_current_log_directory(), buf, switches[2], switches[3]);
+						//else
+						//	save_calculation_for_files(get_current_log_directory(), NULL, switches[2], switches[3]);
 					break;
 					case 4:
 						printf("Track file: %s\n", args[i]);
@@ -159,8 +259,9 @@ int * parse_arguments(char *args[], int size){
 						printf("Untrack file: %s\n", args[i]);
 						//	Call Untrack function
 					break;
-				}				
+				}
 			}
+
 	}
 	printf("***********\n");
 	return switches;
@@ -190,16 +291,19 @@ int main(int argc, char* argv[]){
 		print_help();
 		return 0;
 	}
-	int *active_switches = parse_arguments(argv,switches_available);
-		if(active_switches == NULL){
+	
+	int logDir = init_log_directories();
+	
+	int result = parse_arguments(argv,argc);
+		if(result == -1){
 			return -1;
 		}
 	//get_directories_from_custom_config("./dirs");
+
 	
-	/*int logDir = init_log_directories();
-	
+/*
 	if(logDir > 0)
-		call_calculate_script("~/mdtests", get_current_log_directory()); // WORKS 
+		call_calculate_script("~/mdtests", get_current_log_directory()); // WORKS
 	int value =  integrity_compromised("asd");
 	printf("Value of comparison is: %d\n", value);*/
 	//add_file_to_tracked(argv[1]);
@@ -207,7 +311,7 @@ int main(int argc, char* argv[]){
 	{
 		printf("%d\n", active_switches[i]);
 	}*/
-	free(active_switches);
+	//free(active_switches);
 	//system("echo dollar >> ./file");
 	//calculate_and_save("as");
 	//printfromfile();
@@ -221,6 +325,6 @@ int main(int argc, char* argv[]){
 	}
 	*/
 	//print_current_date();	//WORKS
-	
+
 	return 0;	//Exit Success
 }

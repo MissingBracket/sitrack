@@ -5,6 +5,7 @@ char *scripts_directory="./scripts/";
 
 int integrity_compromised(char* file){
 	char* currentLog = get_current_log_directory();
+	printf("Reading from : %s\n", currentLog);
 	char hash_1[32], hash_2[32];
 	if(strcmp(hash_1, hash_2) < 0)
 		printf("%s\n", "Values are different");
@@ -35,9 +36,9 @@ int count_length(char* string){
 }
 void call_calculate_script(char* directory, char *output, int d, int n, int c){
 	char full_directory[80] = {'\0'};
-	printf("parameters:%s and %s\n",directory, output);
+	//printf("parameters:%s and %s\n",directory, output);
 	snprintf(full_directory, 80, "./scripts/caansatofi %s %s/differential", directory, output);
-	printf("Call script with parameter:\t %s\n", full_directory);
+	//printf("Call script with parameter:\t %s\n", full_directory);
 	system(full_directory);
 
 }
