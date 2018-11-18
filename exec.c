@@ -1,12 +1,3 @@
-/*
- ============================================================================
- Name        : sitrack.c
- Author      : Smileperience
- Version     :
- Copyright   : Distribute however ya wish
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
 #define bool int
 #define true 1
 #define false 0
@@ -23,8 +14,8 @@
 //#include "./utilities/dateman.h"
 #include "./utilities/integrman.h"
 #include "./utilities/fileman.h"
-const float program_version = 0.02;
-const char* details = "Ready to .";
+const float program_version = 0.10;
+const char* details = "Ready to execute basic tasks. WIP, though.";
 
 const char* script_dir = "./scripts/";
 /*
@@ -95,20 +86,6 @@ char* constr(char* a, char* b){
 	}
 	return result;
 }
-//	[moved to integrity manager]
-void execute_script(char* scr_name){
-	system(constr("./scripts/", scr_name));
-}
-//	[moved to integrity manager]
-void execute_system(char* command){
-	system(command);
-}
-//	[moved to integrity manager]
-void calculate_and_compare(char *dir){
-
-}
-
-
 /*
 	Sets flags for program functionality
 */
@@ -163,7 +140,6 @@ int offset=0;
 					offset = 0;
 				break;
         }
-        //cvalue = optarg;
         break;
 
       	default:
@@ -193,80 +169,6 @@ int offset=0;
     return 0;
 }
 
-int * old_parse_arguments(char *args[], int size){
-	bool *switches = (bool*)malloc(sizeof(bool)*16);
-	int offset = 0;
-	for(int i = 1 ; args[i]; i++){
-		printf("%s\n", args[i]);
-		if(args[i][0] == '-')
-			for (int j = 1; args[i][j]; ++j)
-			{
-				//	Parse Arguments Here
-				switch(args[i][j]){
-						//	Major switches allowing redirection of output
-						case 'h':
-							print_help();
-							return NULL;
-							break;
-						case 'R': //	Recalculate
-							offset = 0;
-							switches[offset] = true;
-						break;
-						case 'T': //	Track
-							offset = 4;
-							switches[offset] = true;
-						break;
-						case 'U': //	Untrack
-							offset = 8;
-							switches[offset] = true;
-						break;
-						//	Minor switches modifying behavior
-						case 'd':
-							switches[1 + offset] = true;
-						break;
-						case 'n':
-							switches[2 + offset] = true;
-						break;
-						case 'c':
-							switches[3 + offset] = true;
-						break;
-						default:
-							printf("Don't know what to do with:-> %c <-\n", args[i][j]);
-							return NULL;
-						break;
-					}
-			}else{
-			//	Call functions here:
-				switch(offset){
-					case 0:
-						printf("Recalculate for: %s\n", args[i]);
-						//	Call Recalculate function
-						//if(switches[1] != 0)
-						char buf[256] = {'\0'};
-						//printf("Size of array: %d\n", sizeof(buf));
-						//printf("Size of args[]: %d\n", sizeof(args[i]));
-						strcpy(buf, *&args[i]);
-							printf("%s\n", buf);
-						//save_calculation_for_files(get_current_log_directory(), buf, switches[2], switches[3]);
-						//else
-						//	save_calculation_for_files(get_current_log_directory(), NULL, switches[2], switches[3]);
-					break;
-					case 4:
-						printf("Track file: %s\n", args[i]);
-						add_file_to_tracked(args[i]);
-					break;
-					case 8:
-						printf("Untrack file: %s\n", args[i]);
-						//	Call Untrack function
-					break;
-				}
-			}
-
-	}
-	printf("***********\n");
-	return switches;
-}
-
 // Forwards date of program call to program's log file [might prove obsolete]
 void log_date(){
 	system("echo \"Overseer ran for $(whoami)@$(hostname) on:\" >> ./Log/Overseer.log");
@@ -285,28 +187,28 @@ void tasks(){
 }
 //	That's where fun begins
 int main(int argc, char* argv[]){
-	tasks();
-	log_date();
 	if(argc <2){
 		print_help();
 		return 0;
 	}
 	
 	int logDir = init_log_directories();
+	if(logDir < 0){
+		return -1;
+	}
+
+	tasks();
+	
+	log_date();
 	
 	int result = parse_arguments(argv,argc);
 		if(result == -1){
 			return -1;
-		}
-	//get_directories_from_custom_config("./dirs");
+		}	
 
-	
 /*
-	if(logDir > 0)
-		call_calculate_script("~/mdtests", get_current_log_directory()); // WORKS
 	int value =  integrity_compromised("asd");
 	printf("Value of comparison is: %d\n", value);*/
-	//add_file_to_tracked(argv[1]);
 	/*for (int i = 0; i < switches_available; ++i)
 	{
 		printf("%d\n", active_switches[i]);
