@@ -31,3 +31,14 @@ int get_year(){
 char* get_date_as_string(){
 return "asd";
 }
+char* get_next_date(int year, int month){
+	int n_year = (month == 12 ? year+1 : year), 
+	n_month = (((month) % 12) + 1);
+	char* nextDate = (char*)malloc(sizeof(char)*10);
+	sprintf(nextDate, "%d/%d/\0", n_year, n_month);
+	return nextDate;
+}
+void get_next_date_to_variables(int *year, int *month){
+	*year = (*month == 12 ? (*year) +1 : *year), 
+	*month = (((*month) % 12) + 1);
+}
