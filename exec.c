@@ -150,7 +150,11 @@ int offset=0;
     if(switches[SWITCH_READ] > 0){
     	if(READvalue != NULL){
     		print_from_pointer(READvalue);
-    		save_calculation_for_files(get_current_log_directory(), READvalue, switches[2], switches[3]);
+			//	n
+    		if(switches[SWITCH_READ + 1] > 0)
+    			get_file_hash(READvalue);
+    		else
+    			save_calculation_for_files(get_current_log_directory(), READvalue, switches[2], switches[3]);
 
     	}
     	else
@@ -185,6 +189,10 @@ void tasks(){
 	}
 	printf("%s\n", "********************");
 }
+void alter_int(int *k){
+	*k = 15;
+}
+
 //	That's where fun begins
 int main(int argc, char* argv[]){
 	if(argc <2){

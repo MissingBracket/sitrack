@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
-
+//	Quickly defined dynamic structure
+#include "./list.h"
 /*
 Integrity calculation tools
 Later might need to implement difference files
@@ -21,7 +22,7 @@ int update_integrity_database(void);
 // depending on switches provided
 // NOTE: To be updated
 void display_database(int switches);
-int count_length(char* string);
+int sum_length(char* string);
 //	Compare two checksums and output if they are the same
 int compare_checksums(char* sum1, char* sum2);
 //	Calls the sum calculating script with a parameter of given directory

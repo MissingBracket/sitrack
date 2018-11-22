@@ -1,11 +1,11 @@
-#include "./dateman.h"
+
 #include "./fileman.h"
 #include "./integrman.h"
 #include <errno.h>
-//	Quickly defined dynamic structure
-#include "./list.h"
+
 
 char* config_dir = "./config/dirs";
+char* constants_dir = "./config/constants";
 const char* logs_dir = "./Log";
 
 //char* currentLogDir;
@@ -17,7 +17,7 @@ struct list *get_directories_from_config(){
 }
 // Loads User-specified config file
 struct list *get_directories_from_custom_config(char * custom_config){
-	struct list *directories = NULL;// = malloc(sizeof(struct chain));
+	struct list *directories = NULL;
 	FILE* confile = fopen(custom_config, "r");
 	if(!confile){
 		printf("%s Could not open specified config file: %s\n", FAIL, custom_config);
@@ -31,13 +31,13 @@ struct list *get_directories_from_custom_config(char * custom_config){
 		directories = list_insert(directories, buffer);
 		for(int i =0; i < 255; i++)
 			buffer[i] = '\0';
-
-	//printf("Buffer added : %s\n", buffer);
 	}
+
 	fclose(confile);
-	//chain_print(directories);
 	return directories;
 }
+
+
 
 void printfromfile(){
 	int desc = open(config_dir, O_RDONLY);
@@ -46,9 +46,10 @@ void printfromfile(){
 		return;
 	}else{
 		char buff[50] = {'\0'};
-		int stat = read(desc, buff, 50);
-		printf("%s len = %d\n", buff, stringlen(buff));
-		stat = close(desc);
+		//int stat = 
+		while(read(desc, buff, 10) > 0)
+			printf("%s len = %d\n", buff, stringlen(buff));
+		int stat = close(desc);
 		if(stat ==-1){
 			printf("%s Failed to close file\n", FAIL);
 		}
@@ -148,6 +149,77 @@ char *get_current_log_directory(){
 	char* namebuffer = (char*)malloc(sizeof(char)*20);
 	sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
 	return namebuffer;
+}
+
+char* get_current_log_file_name(){
+	char* namebuffer = (char*)malloc(sizeof(char)*33);
+	sprintf(namebuffer, "%s/%d/%d/differential\0", logs_dir, get_year(), get_month());
+	return namebuffer;	
+}
+char* get_program_parameter(char* param){
+	FILE* constants = fopen(constants_dir, "r");
+
+	if(constants == NULL){
+		fprintf(stderr, "Could not access constants file! This is a critical file.");
+		return NULL;
+	}
+	char *line;
+	size_t len=0;
+	char *parameter;
+	char *prefix;
+	int failsafe=0;
+	while(getline(&line, &len, constants) != -1){
+		prefix = strtok_r(line, "=", &parameter);
+		if(compare_checksums(prefix, param) == 1){
+			fclose(constants);
+			return parameter;		
+		}
+		failsafe++;
+		if(failsafe >= 100)
+			break;
+	}
+	fclose(constants);
+	return NULL;
+}
+
+char* get_file_hash(char* file){
+	char filename[32] = {'\0'};
+	char *buffer;
+	int read=-1;
+	int beg_month = 0, beg_year = 0;
+	
+	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
+	
+	while(beg_year <= get_year() && beg_month <= get_month()){
+		int failsafe = 0;
+		printf("Checking for : %d/%d\n", beg_year, beg_month);
+		char namebuffer[32] = {'\0'};
+		sprintf(namebuffer, "./Log/%d/%d/differential", beg_year, beg_month);
+		char *hash, *filename;
+		char *line;
+		size_t len=0;
+		if(access(namebuffer, F_OK) != -1){
+			
+			FILE* log_file = fopen(namebuffer, "r");
+			failsafe ++;
+			while(getline(&line, &len, log_file) != -1){
+				hash = strtok_r(line, ".", &filename);
+				strtok(filename, "\n");
+				if(compare_checksums(filename, file) == 1){
+					printf("Found: %s\n", hash);
+					fclose(log_file);
+					return hash;		
+				}
+				failsafe++;
+				if(failsafe >= 1000)
+					break;
+			}
+			fclose(log_file);
+		}
+		get_next_date_to_variables(&beg_year, &beg_month);
+	}
+	printf("Failed to find entry for %s\n", file);
+	return NULL;
 }
 
 int add_file_to_tracked(char* directory){
