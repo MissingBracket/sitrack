@@ -100,11 +100,10 @@ int stringlen(char* str){
 int init_log_directories(){
 	print_current_date();
 	struct stat st = {0};
-	int umaskResult = umask(0);
+	umask(0);
 	char namebuffer[50] = {'\0'};
-	printf("%s%o\n","Umask has been set: ", umaskResult);
-	int len = sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
-	printf("Result of query : %s with length of: %d\n", namebuffer, len);
+	sprintf(namebuffer, "%s/%d/%d", logs_dir, get_year(), get_month());
+	//printf("Result of query : %s with length of: %d\n", namebuffer, len);
 	// Log/Month
 	sprintf(namebuffer, "%s/%d", logs_dir, get_year());
  
@@ -153,7 +152,7 @@ char *get_current_log_directory(){
 
 char* get_current_log_file_name(){
 	char* namebuffer = (char*)malloc(sizeof(char)*33);
-	sprintf(namebuffer, "%s/%d/%d/differential\0", logs_dir, get_year(), get_month());
+	sprintf(namebuffer, "%s/%d/%d/differential", logs_dir, get_year(), get_month());
 	return namebuffer;	
 }
 char* get_program_parameter(char* param){
@@ -174,6 +173,7 @@ char* get_program_parameter(char* param){
 			fclose(constants);
 			return parameter;		
 		}
+		else printf("%s\n", "Compare failed");
 		failsafe++;
 		if(failsafe >= 100)
 			break;
@@ -183,16 +183,22 @@ char* get_program_parameter(char* param){
 }
 
 char* get_file_hash(char* file){
-	char filename[32] = {'\0'};
-	char *buffer;
-	int read=-1;
+	//	PATH MAX
+	char actualpath [4096+1];
+	char *ptr;
+
+
+	ptr = realpath(file, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return NULL;
+	}
+	//printf("searching for record: %s\n", actualpath);
 	int beg_month = 0, beg_year = 0;
-	
 	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
-	
 	while(beg_year <= get_year() && beg_month <= get_month()){
 		int failsafe = 0;
-		printf("Checking for : %d/%d\n", beg_year, beg_month);
+		//printf("Checking for : %d/%d\n", beg_year, beg_month);
 		char namebuffer[32] = {'\0'};
 		sprintf(namebuffer, "./Log/%d/%d/differential", beg_year, beg_month);
 		char *hash, *filename;
@@ -203,10 +209,10 @@ char* get_file_hash(char* file){
 			FILE* log_file = fopen(namebuffer, "r");
 			failsafe ++;
 			while(getline(&line, &len, log_file) != -1){
-				hash = strtok_r(line, ".", &filename);
+				hash = strtok_r(line, ":", &filename);
 				strtok(filename, "\n");
-				if(compare_checksums(filename, file) == 1){
-					printf("Found: %s\n", hash);
+				if(compare_checksums(filename, actualpath) == 1){
+					printf("Found record for : %s\nAnd it's hash is: %s\n", actualpath, hash);
 					fclose(log_file);
 					return hash;		
 				}

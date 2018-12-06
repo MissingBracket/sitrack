@@ -92,7 +92,6 @@ char* constr(char* a, char* b){
 int parse_arguments(char *argv[], int argc){
 int switches[switches_available] = {0};
 char *READvalue = NULL, *TRACKvalue = NULL, *UNTRACKvalue = NULL;
-int index;
 int c;
 
 opterr = 0;
@@ -149,7 +148,7 @@ int offset=0;
 
     if(switches[SWITCH_READ] > 0){
     	if(READvalue != NULL){
-    		print_from_pointer(READvalue);
+    		//print_from_pointer(READvalue);
 			//	n
     		if(switches[SWITCH_READ + 1] > 0)
     			get_file_hash(READvalue);
@@ -204,9 +203,7 @@ int main(int argc, char* argv[]){
 	if(logDir < 0){
 		return -1;
 	}
-
-	tasks();
-	
+		
 	log_date();
 	
 	int result = parse_arguments(argv,argc);

@@ -4,7 +4,8 @@
 char *scripts_directory="./scripts/";
 
 int integrity_compromised(char* file){
-	char* currentLog = get_current_log_file_name();
+	//	REBUIILD REQUIRED!!!
+	/*char* currentLog = get_current_log_file_name();
 	printf("Reading from : %s\n", currentLog);
 	char hash_1[256], hash_2[32];
 	FILE * readfrom;
@@ -20,7 +21,7 @@ int integrity_compromised(char* file){
 		strncpy(hash_buffer, file_buffer, 32);
 	}
 
-	fclose(readfrom);
+	fclose(readfrom);*/
 return 0;
 }
 int databse_integrity_compromised(){
@@ -40,7 +41,6 @@ int compare_checksums(char* sum1, char* sum2){
 	char *it1=NULL, *it2=NULL;
 	it1 = sum1;
 	it2 = sum2;
-	int failsafe=0;
 	for(int i =0; *it1; i++){
 		if(*it1 != *it2)
 			return 0;

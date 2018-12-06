@@ -29,13 +29,13 @@ int get_year(){
 	return (int)(tm.tm_year + 1900);
 }
 char* get_date_as_string(){
-return "asd";
+return "placeholder";
 }
 char* get_next_date(int year, int month){
 	int n_year = (month == 12 ? year+1 : year), 
 	n_month = (((month) % 12) + 1);
 	char* nextDate = (char*)malloc(sizeof(char)*10);
-	sprintf(nextDate, "%d/%d/\0", n_year, n_month);
+	sprintf(nextDate, "%d/%d/", n_year, n_month);
 	return nextDate;
 }
 void get_next_date_to_variables(int *year, int *month){
