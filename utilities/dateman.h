@@ -20,3 +20,4 @@ char* get_date_as_string();
 char* get_next_date(int year, int month);
 
 void get_next_date_to_variables(int *year, int *month);
+void something();

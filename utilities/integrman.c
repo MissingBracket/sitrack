@@ -60,10 +60,17 @@ int sum_length(char* string){
 	return len;
 }
 void call_calculate_script(char* directory, char *output, int d, int n, int c){
-	char full_directory[80] = {'\0'};
+	char full_directory[4096] = {'\0'};
 	//printf("parameters:%s and %s\n",directory, output);
-	snprintf(full_directory, 80, "./scripts/caansatofi %s %s/differential", directory, output);
+	snprintf(full_directory, 4096, "./scripts/caansatofi %s %s/differential", directory, output);
 	//printf("Call script with parameter:\t %s\n", full_directory);
 	system(full_directory);
 
+}
+void call_rebuilder_script(char* vault, char* current, char* date, char* oper){
+	char full_directory[4096] = {'\0'};
+	//printf("parameters:%s and %s\n",directory, output);
+	snprintf(full_directory, 4096, "./scripts/sanachre %s %s %s %s", vault, current, date, oper);
+	//printf("Call script with parameter:\t %s\n", full_directory);
+	system(full_directory);	
 }

@@ -182,6 +182,52 @@ char* get_program_parameter(char* param){
 	return NULL;
 }
 
+char* get_latest_file_hash(char* file){
+	//	PATH MAX
+	char actualpath [4096+1];
+	char *ptr;
+
+
+	ptr = realpath(file, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return NULL;
+	}
+	char *latest_hash = (char*)malloc(sizeof(char) * 4096);
+	int beg_month = 0, beg_year = 0;
+	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
+	while(beg_year <= get_year() && beg_month <= get_month()){
+		int failsafe = 0;
+		//printf("Checking for : %d/%d\n", beg_year, beg_month);
+		char namebuffer[32] = {'\0'};
+		sprintf(namebuffer, "./Log/%d/%d/differential", beg_year, beg_month);
+		char *hash, *filename;
+		char *line;
+		size_t len=0;
+		if(access(namebuffer, F_OK) != -1){
+			
+			FILE* log_file = fopen(namebuffer, "r");
+			failsafe ++;
+			while(getline(&line, &len, log_file) != -1){
+				hash = strtok_r(line, ":", &filename);
+				strtok(filename, "\n");
+				if(compare_checksums(filename, actualpath) == 1){
+					printf("Found record for : %s\nAnd it's hash is: %s\n", actualpath, hash);
+					strcpy(latest_hash, hash);
+				}
+				failsafe++;
+				if(failsafe >= 1000)
+					break;
+			}
+			fclose(log_file);
+		}
+		get_next_date_to_variables(&beg_year, &beg_month);
+	}
+	
+	return latest_hash;
+}
+
+
 char* get_file_hash(char* file){
 	//	PATH MAX
 	char actualpath [4096+1];
@@ -229,9 +275,20 @@ char* get_file_hash(char* file){
 }
 
 int add_file_to_tracked(char* directory){
+	char actualpath [4096+1];
+	char *ptr;
+
+	ptr = realpath(directory, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return -1;
+	}
+	char temp[4096] = {'\0'};
+	sprintf(temp, "cp %s %s", directory, "./vault");
+	system(temp);
 	int desc, save_result, stat;
-	char *buffer_why_not = (char*)malloc(sizeof(char) * (stringlen(directory) + 1)); //	Is it safe?
-	sprintf(buffer_why_not, "%s\n", directory);
+	char *buffer_why_not = (char*)malloc(sizeof(char) * (stringlen(actualpath) + 1)); //	Is it safe?
+	sprintf(buffer_why_not, "%s\n", actualpath);
 	desc = open("./config/dirs", O_RDWR|O_APPEND);
 	save_result = write(desc, buffer_why_not, strlen(buffer_why_not));
 	if(save_result < 0){
@@ -254,8 +311,8 @@ void print_from_pointer(char * ptr){
 
 int save_calculation_for_files(char *output, char* input, int n, int c){
 	int changes = 0;
-	struct list *head= NULL;
-	struct list *ptr= NULL;
+	struct list *head = NULL;
+	struct list *ptr = NULL;
 	char *config_to_work_on;
 	
 	if(input != NULL)
@@ -275,15 +332,15 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 	}
 	ptr = head;
 	fclose(config_file);
-	printf("Output argument: %s\n", output);
-	printf("Input argument: %s\n", input);
+	//printf("Output argument: %s\n", output);
+	//printf("Input argument: %s\n", input);
 	while(ptr != NULL){
 		changes++;
-		printf("Val : %s\n", ptr->directory);
+		printf("Processed : %d\r", changes);
 		call_calculate_script(ptr->directory, output, 0, 0, 0);
 		ptr = ptr->next;
 	}
 	head = list_clear(head);
-	printf("Finished Calculating for %d entries.\n", changes);
+	printf("\nFinished Calculating for %d entries.\n", changes);
 	return changes;
 }

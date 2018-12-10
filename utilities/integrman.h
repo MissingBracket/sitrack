@@ -27,3 +27,4 @@ int sum_length(char* string);
 int compare_checksums(char* sum1, char* sum2);
 //	Calls the sum calculating script with a parameter of given directory
 void call_calculate_script(char* directory, char* output, int d, int n, int c);
+void call_rebuilder_script(char* vault, char* current, char* date, char* oper);

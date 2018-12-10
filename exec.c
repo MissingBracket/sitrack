@@ -14,7 +14,7 @@
 //#include "./utilities/dateman.h"
 #include "./utilities/integrman.h"
 #include "./utilities/fileman.h"
-const float program_version = 0.10;
+const float program_version = 0.65;
 const char* details = "Ready to execute basic tasks. WIP, though.";
 
 const char* script_dir = "./scripts/";
@@ -194,6 +194,7 @@ void alter_int(int *k){
 
 //	That's where fun begins
 int main(int argc, char* argv[]){
+	
 	if(argc <2){
 		print_help();
 		return 0;
@@ -203,35 +204,12 @@ int main(int argc, char* argv[]){
 	if(logDir < 0){
 		return -1;
 	}
-		
+
 	log_date();
 	
 	int result = parse_arguments(argv,argc);
 		if(result == -1){
 			return -1;
 		}	
-
-/*
-	int value =  integrity_compromised("asd");
-	printf("Value of comparison is: %d\n", value);*/
-	/*for (int i = 0; i < switches_available; ++i)
-	{
-		printf("%d\n", active_switches[i]);
-	}*/
-	//free(active_switches);
-	//system("echo dollar >> ./file");
-	//calculate_and_save("as");
-	//printfromfile();
-	/*
-	execute_script("script1");
-	get_directories_from_config();
-	*/
-	/*
-	if(logDir != -1){
-	logEntries();
-	}
-	*/
-	//print_current_date();	//WORKS
-
 	return 0;	//Exit Success
 }

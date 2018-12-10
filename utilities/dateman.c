@@ -29,7 +29,11 @@ int get_year(){
 	return (int)(tm.tm_year + 1900);
 }
 char* get_date_as_string(){
-return "placeholder";
+	time_t t = time(NULL);
+	const struct tm tim = *localtime(&t);
+	char *formatted_date = (char*)malloc(sizeof(struct tm) + 1);
+	strftime(formatted_date, sizeof(struct tm) + 1, "%F", &tim);
+	return formatted_date;
 }
 char* get_next_date(int year, int month){
 	int n_year = (month == 12 ? year+1 : year), 

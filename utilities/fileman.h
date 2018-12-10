@@ -41,3 +41,5 @@ char* get_current_log_file_name();
 char* get_file_hash(char* file);
 //	Fetch constant parameter by name
 char* get_program_parameter(char* param);
+
+char *get_latest_file_hash(char* file);
