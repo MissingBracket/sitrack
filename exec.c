@@ -151,7 +151,7 @@ int offset=0;
     		//print_from_pointer(READvalue);
 			//	n
     		if(switches[SWITCH_READ + 1] > 0)
-    			get_file_hash(READvalue);
+    			get_latest_file_hash(READvalue);
     		else
     			save_calculation_for_files(get_current_log_directory(), READvalue, switches[2], switches[3]);
 
@@ -195,6 +195,10 @@ void alter_int(int *k){
 //	That's where fun begins
 int main(int argc, char* argv[]){
 	
+	/*call_rebuilder_script_forward("a", "b", "c");
+	call_rebuilder_script_backward("a", "b", "c");
+	return 1;
+*/
 	if(argc <2){
 		print_help();
 		return 0;

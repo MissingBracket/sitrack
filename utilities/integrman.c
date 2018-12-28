@@ -72,5 +72,13 @@ void call_rebuilder_script(char* vault, char* current, char* date, char* oper){
 	//printf("parameters:%s and %s\n",directory, output);
 	snprintf(full_directory, 4096, "./scripts/sanachre %s %s %s %s", vault, current, date, oper);
 	//printf("Call script with parameter:\t %s\n", full_directory);
-	system(full_directory);	
+	printf("call to %s\n", full_directory);
+	//system(full_directory);	
 }
+void call_rebuilder_script_backward(char* vault, char* current, char* date){
+	call_rebuilder_script(vault, current, date, "rev");
+}
+void call_rebuilder_script_forward(char* vault, char* current, char* date){
+	call_rebuilder_script(vault, current, date, "ach");
+}
+

@@ -186,8 +186,8 @@ char* get_latest_file_hash(char* file){
 	//	PATH MAX
 	char actualpath [4096+1];
 	char *ptr;
-
-
+	int found = 0;
+	printf("Recieved %s\n", file);
 	ptr = realpath(file, actualpath);
 	if(ptr == NULL){
 		printf("Specified file doesn't exist.\n");
@@ -211,7 +211,7 @@ char* get_latest_file_hash(char* file){
 			while(getline(&line, &len, log_file) != -1){
 				hash = strtok_r(line, ":", &filename);
 				strtok(filename, "\n");
-				if(compare_checksums(filename, actualpath) == 1){
+				if((found = compare_checksums(filename, actualpath)) == 1){
 					printf("Found record for : %s\nAnd it's hash is: %s\n", actualpath, hash);
 					strcpy(latest_hash, hash);
 				}
@@ -227,12 +227,10 @@ char* get_latest_file_hash(char* file){
 	return latest_hash;
 }
 
-
 char* get_file_hash(char* file){
 	//	PATH MAX
 	char actualpath [4096+1];
 	char *ptr;
-
 
 	ptr = realpath(file, actualpath);
 	if(ptr == NULL){
@@ -283,6 +281,25 @@ int add_file_to_tracked(char* directory){
 		printf("Specified file doesn't exist.\n");
 		return -1;
 	}
+
+	FILE* dirs = fopen(config_dir, "r");
+
+	if(dirs == NULL){
+		fprintf(stderr, "Could not access dirs file! This is a critical file.");
+		return -1;
+	}
+
+	char line[4096];
+	while(!feof(dirs)){
+		fscanf(dirs, "%s\n", &line);
+		if(compare_checksums(line, actualpath) == 1){
+			printf("File already on the list\n");
+			fclose(dirs);
+			return -1;		
+		}
+	}
+	fclose(dirs);
+
 	char temp[4096] = {'\0'};
 	sprintf(temp, "cp %s %s", directory, "./vault");
 	system(temp);
@@ -310,11 +327,12 @@ void print_from_pointer(char * ptr){
 }
 
 int save_calculation_for_files(char *output, char* input, int n, int c){
-	int changes = 0;
+	int changes = 0, n_changes = 0;
 	struct list *head = NULL;
 	struct list *ptr = NULL;
 	char *config_to_work_on;
-	
+	char pipe_to_md5[34];
+	FILE* pipe;
 	if(input != NULL)
 		config_to_work_on = input;
 	else
@@ -334,13 +352,30 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 	fclose(config_file);
 	//printf("Output argument: %s\n", output);
 	//printf("Input argument: %s\n", input);
+
 	while(ptr != NULL){
-		changes++;
+		
 		printf("Processed : %d\r", changes);
-		call_calculate_script(ptr->directory, output, 0, 0, 0);
+		sprintf(pipe_to_md5, "%s %s", "/bin/md5sum", ptr->directory);
+		/*
+		*/
+		pipe = popen(pipe_to_md5, "r");
+		if(pipe == NULL){
+			printf("%s\n", "fail");
+		}
+		fgets(pipe_to_md5, sizeof(pipe_to_md5)-1, pipe);
+		if(compare_checksums(pipe_to_md5, get_latest_file_hash(ptr->directory)) > 0){
+			printf("File has not changed\n");
+			n_changes++;
+		}
+		else{
+			call_calculate_script(ptr->directory, output, 0, 0, 0);
+			changes++;
+		}
+		pclose(pipe);
 		ptr = ptr->next;
 	}
 	head = list_clear(head);
-	printf("\nFinished Calculating for %d entries.\n", changes);
+	printf("\nFinished Calculating for %d entries with %d changes and %d files unmodified.\n", changes + n_changes, changes, n_changes);
 	return changes;
 }
