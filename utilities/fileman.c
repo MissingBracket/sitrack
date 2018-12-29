@@ -24,7 +24,6 @@ struct list *get_directories_from_custom_config(char * custom_config){
 		return NULL;
 	}
 	char buffer[256] = {'\0'};
-	//char *buffer;
 	while(!feof(confile)){
 		buffer[255]='\0';
 		fscanf(confile, "%s\n" ,buffer);
@@ -187,7 +186,7 @@ char* get_latest_file_hash(char* file){
 	char actualpath [4096+1];
 	char *ptr;
 	int found = 0;
-	printf("Recieved %s\n", file);
+	//printf("Recieved %s\n", file);
 	ptr = realpath(file, actualpath);
 	if(ptr == NULL){
 		printf("Specified file doesn't exist.\n");
@@ -201,7 +200,7 @@ char* get_latest_file_hash(char* file){
 		//printf("Checking for : %d/%d\n", beg_year, beg_month);
 		char namebuffer[32] = {'\0'};
 		sprintf(namebuffer, "./Log/%d/%d/differential", beg_year, beg_month);
-		char *hash, *filename;
+		char *hash;
 		char *line;
 		size_t len=0;
 		if(access(namebuffer, F_OK) != -1){
@@ -209,11 +208,10 @@ char* get_latest_file_hash(char* file){
 			FILE* log_file = fopen(namebuffer, "r");
 			failsafe ++;
 			while(getline(&line, &len, log_file) != -1){
-				hash = strtok_r(line, ":", &filename);
-				strtok(filename, "\n");
-				if((found = compare_checksums(filename, actualpath)) == 1){
-					printf("Found record for : %s\nAnd it's hash is: %s\n", actualpath, hash);
-					strcpy(latest_hash, hash);
+				char **log_line = parse_line_into_words(line, ":", &failsafe);
+				if((found = compare_checksums(log_line[FILENAME], actualpath)) == 1){
+					//printf("Found record for : %s\nAnd it's hash is: %s\n", actualpath, log_line[HASH]);
+					strcpy(latest_hash, log_line[HASH]);
 				}
 				failsafe++;
 				if(failsafe >= 1000)
@@ -223,7 +221,6 @@ char* get_latest_file_hash(char* file){
 		}
 		get_next_date_to_variables(&beg_year, &beg_month);
 	}
-	
 	return latest_hash;
 }
 
@@ -364,11 +361,13 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 			printf("%s\n", "fail");
 		}
 		fgets(pipe_to_md5, sizeof(pipe_to_md5)-1, pipe);
+		//printf("pipe / file %s - %s\n", pipe_to_md5, get_latest_file_hash(ptr->directory));
 		if(compare_checksums(pipe_to_md5, get_latest_file_hash(ptr->directory)) > 0){
-			printf("File has not changed\n");
+			//printf("File has not changed\n");
 			n_changes++;
 		}
 		else{
+			create_patch_for_file(ptr->directory, get_date_as_string());
 			call_calculate_script(ptr->directory, output, 0, 0, 0);
 			changes++;
 		}

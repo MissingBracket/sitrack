@@ -102,7 +102,6 @@ char** parse_line_into_words(char* line, char*delim, int* len){
 		size++;
 	}
 	*len=size;
-	//printf("%s\n", "exited size");
 	words = (char**)malloc(sizeof(char*) * size);
 	for(int i =0; i < size; i++){
 		words[i] = (char*)malloc(sizeof(char)*1024);
@@ -111,7 +110,6 @@ char** parse_line_into_words(char* line, char*delim, int* len){
 
 	prefix = strtok(copy, delim);
 	while(prefix != NULL){
-		//printf("prefix: %s\n", prefix);
 		if(current != size)			
 			strcpy(words[current], prefix);
 		prefix = strtok(NULL, delim);

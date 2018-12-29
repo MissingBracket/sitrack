@@ -1,3 +1,8 @@
+//	Defines to make parsing the log file more legible
+#define HASH 0
+#define FILENAME 1
+#define DATECHANGED 2
+
 #include <string.h>
 #include <stdio.h>
 //	Quickly defined dynamic structure
