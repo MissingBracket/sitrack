@@ -82,3 +82,40 @@ void call_rebuilder_script_forward(char* vault, char* current, char* date){
 	call_rebuilder_script(vault, current, date, "ach");
 }
 
+void create_patch_for_file(char *file, char* date){
+	char vault_path[512] = {'\0'};
+
+	//printf("parameters:%s and %s\n",directory, output);
+//	snprintf(vault_path, 4096, "./scripts/sanachre %s %s %s %s", vault, current, date, oper);
+	//call_rebuilder_script("./vault", current, date, "ach");	
+}
+char** parse_line_into_words(char* line, char*delim, int* len){
+	int size = 0;
+	char copy[4096];
+	strcpy(copy, line);
+	char **words = NULL;
+	char*prefix = NULL;
+	prefix = strtok(line, delim);
+	while(prefix != NULL){
+		prefix = strtok(NULL, delim);
+		
+		size++;
+	}
+	*len=size;
+	//printf("%s\n", "exited size");
+	words = (char**)malloc(sizeof(char*) * size);
+	for(int i =0; i < size; i++){
+		words[i] = (char*)malloc(sizeof(char)*1024);
+	}
+	int current = 0;
+
+	prefix = strtok(copy, delim);
+	while(prefix != NULL){
+		//printf("prefix: %s\n", prefix);
+		if(current != size)			
+			strcpy(words[current], prefix);
+		prefix = strtok(NULL, delim);
+		current++;
+	}
+	return words;
+}
