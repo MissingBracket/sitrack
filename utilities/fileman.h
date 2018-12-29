@@ -43,3 +43,4 @@ char* get_file_hash(char* file);
 char* get_program_parameter(char* param);
 
 char *get_latest_file_hash(char* file);
+char* translate_to_vault_path(char* file);

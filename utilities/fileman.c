@@ -361,14 +361,14 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 			printf("%s\n", "fail");
 		}
 		fgets(pipe_to_md5, sizeof(pipe_to_md5)-1, pipe);
-		//printf("pipe / file %s - %s\n", pipe_to_md5, get_latest_file_hash(ptr->directory));
 		if(compare_checksums(pipe_to_md5, get_latest_file_hash(ptr->directory)) > 0){
-			//printf("File has not changed\n");
 			n_changes++;
 		}
 		else{
-			create_patch_for_file(ptr->directory, get_date_as_string());
-			call_calculate_script(ptr->directory, output, 0, 0, 0);
+			char* ts = get_date_as_string();
+			call_calculate_script(ptr->directory, output, get_date_as_string());
+			printf("ptr->directory = %s\n", ptr->directory);
+			create_patch_for_file(ptr->directory, ts);
 			changes++;
 		}
 		pclose(pipe);
@@ -377,4 +377,11 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 	head = list_clear(head);
 	printf("\nFinished Calculating for %d entries with %d changes and %d files unmodified.\n", changes + n_changes, changes, n_changes);
 	return changes;
+}
+char* translate_to_vault_path(char* file){
+	int len=0;
+	char *vault_filename = (char*)malloc(sizeof(char) * 2048);
+	char** filename = parse_line_into_words(file, "/", &len);
+	sprintf(vault_filename, "./vault/%s", filename[len-1]);
+	return vault_filename;
 }

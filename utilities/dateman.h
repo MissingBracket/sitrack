@@ -12,7 +12,7 @@ void print_current_date();
 int get_day();
 
 int get_month();
-//
+
 int get_year();
 
 char* get_date_as_string();

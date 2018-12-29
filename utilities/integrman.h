@@ -32,7 +32,7 @@ int sum_length(char* string);
 int compare_checksums(char* sum1, char* sum2);
 //	Calls the sum calculating script with a parameter of given directory
 void create_patch_for_file(char *file, char* date);
-void call_calculate_script(char* directory, char* output, int d, int n, int c);
+void call_calculate_script(char* directory, char* output, char* timestamp);
 void call_rebuilder_script_backward(char* vault, char* current, char* date);
 void call_rebuilder_script_forward(char* vault, char* current, char* date);
 //	Begin checking changes on file from vaulted version to given time

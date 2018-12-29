@@ -22,7 +22,7 @@ int get_month(){
 	struct tm tm = *localtime(&t);
 	return (int)(tm.tm_mon+1);
 }
-//
+
 int get_year(){
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
@@ -32,7 +32,7 @@ char* get_date_as_string(){
 	time_t t = time(NULL);
 	const struct tm tim = *localtime(&t);
 	char *formatted_date = (char*)malloc(sizeof(struct tm) + 1);
-	strftime(formatted_date, sizeof(struct tm) + 1, "%F", &tim);
+	strftime(formatted_date, sizeof(struct tm) + 1, "%F-%S", &tim);
 	return formatted_date;
 }
 char* get_next_date(int year, int month){

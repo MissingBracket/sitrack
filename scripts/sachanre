@@ -11,14 +11,13 @@ if [[ $# -ne 4 ]]; then
 	echo "Script requires 4 arguments."
 	exit 1
 fi
-
+echo "Script received $1 $2 $3 $4"
 OUTFILE="$1_$3.patch"
 if [ ! -f $1 ]; then
-	echo "File does not exist."
+	echo "File $1 does not exist."
 	exit 1
 fi
 if [[ $4 == "rev" ]]; then
-	echo "someyhing's wrong"
 	patch -R < $OUTFILE
 elif [[ $4 == "chk" ]]; then
 	diff -u $1 $2 > $OUTFILE

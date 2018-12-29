@@ -195,10 +195,6 @@ void alter_int(int *k){
 //	That's where fun begins
 int main(int argc, char* argv[]){
 	
-	/*call_rebuilder_script_forward("a", "b", "c");
-	call_rebuilder_script_backward("a", "b", "c");
-	return 1;
-*/
 	if(argc <2){
 		print_help();
 		return 0;
