@@ -1,15 +1,23 @@
 # Calculate And Save To File
 # $1 defines input directory
 # $2 defines output file
+WORKINGDIR=$(pwd)
 if [ ! -d $1 ]; then
-	echo "File / directory not found"
+	#echo "Directory not found $1"
+	#echo "Trying file approach"
+		if [ -f $1 ]; then
+			#echo "Ran on $(date) with parameter $1" >> "$WORKINGDIR/$2"
+			echo "$(md5sum $1 | awk '{printf("%s:%s\n",$1,$2);}'):$(date +%F-%S)">> "$WORKINGDIR/$2"
+			exit 0
+		fi
+	echo "$1 does not exist!"
 	exit 1
 fi
 
-WORKINGDIR=$(pwd)
-echo "Ran on $(date) with parameter $1" >> "$WORKINGDIR/$2"
+#echo "Ran on $(date) with parameter $1" >> "$WORKINGDIR/$2"
 cd $1
 for i in $(find -type f  ); do
-echo "$(md5sum $(readlink -f $i))" | awk '{printf("%s:%s\n",$1,$2);}' >> "$WORKINGDIR/$2"
+echo "$($(md5sum $(readlink -f $i)) | awk '{printf("%s:%s\n",$1,$2);}'):$(date +%F-%S)" >> "$WORKINGDIR/$2"
 done
 exit 0
+	
