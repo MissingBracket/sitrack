@@ -8,7 +8,7 @@ and recording them in local database
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "./dateman.h"
-
+//	Debug print defines
 #define INFO "[INFO]"
 #define FAIL "[FAIL]"
 #define SUCC "[SUCC]"
@@ -38,9 +38,9 @@ char* get_current_log_directory();
 //	Returns filename for current log file
 char* get_current_log_file_name();
 //	Returns hash for given filename
-char* get_file_hash(char* file);
+char* get_initial_file_hash(char* file);
 //	Fetch constant parameter by name
 char* get_program_parameter(char* param);
-
-char *get_latest_file_hash(char* file);
+char* get_file_hash_by_date(char* filename, char* date);
+char* get_latest_file_hash(char* file);
 char* translate_to_vault_path(char* file);

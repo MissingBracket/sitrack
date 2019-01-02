@@ -63,7 +63,7 @@ void call_calculate_script(char* directory, char *output, char* timestamp){
 	char full_directory[4096] = {'\0'};
 	//printf("parameters:%s and %s\n",directory, output);
 
-	snprintf(full_directory, 4096, "./scripts/caansatofi %s %s/differential %s", directory, output, timestamp);
+	snprintf(full_directory, 4096, "./scripts/caansatofi %s %s/changefile %s", directory, output, timestamp);
 	//printf("Call script with parameter:\t %s\n", full_directory);
 	system(full_directory);
 

@@ -151,7 +151,7 @@ char *get_current_log_directory(){
 
 char* get_current_log_file_name(){
 	char* namebuffer = (char*)malloc(sizeof(char)*33);
-	sprintf(namebuffer, "%s/%d/%d/differential", logs_dir, get_year(), get_month());
+	sprintf(namebuffer, "%s/%d/%d/changefile", logs_dir, get_year(), get_month());
 	return namebuffer;	
 }
 char* get_program_parameter(char* param){
@@ -192,14 +192,18 @@ char* get_latest_file_hash(char* file){
 		printf("Specified file doesn't exist.\n");
 		return NULL;
 	}
+	//printf("Checking for hash from : %s\n", get_program_parameter("record_begin"));
 	char *latest_hash = (char*)malloc(sizeof(char) * 4096);
 	int beg_month = 0, beg_year = 0;
 	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
-	while(beg_year <= get_year() && beg_month <= get_month()){
+	//printf("Search begin %s\n", );
+	printf("Checking for : %d/%d\n", beg_year, beg_month);
+	//printf("Checks : %d/%d\n", beg_year <= get_year(), beg_month <= get_month());
+	while(beg_year <= get_year() && beg_month <= get_month()) {
 		int failsafe = 0;
-		//printf("Checking for : %d/%d\n", beg_year, beg_month);
+	//	printf("Checking for : %d/%d\n", beg_year, beg_month);
 		char namebuffer[32] = {'\0'};
-		sprintf(namebuffer, "./Log/%d/%d/differential", beg_year, beg_month);
+		sprintf(namebuffer, "./Log/%d/%d/changefile", beg_year, beg_month);
 		char *hash;
 		char *line;
 		size_t len=0;
@@ -224,7 +228,7 @@ char* get_latest_file_hash(char* file){
 	return latest_hash;
 }
 
-char* get_file_hash(char* file){
+char* get_initial_file_hash(char* file){
 	//	PATH MAX
 	char actualpath [4096+1];
 	char *ptr;
@@ -241,7 +245,7 @@ char* get_file_hash(char* file){
 		int failsafe = 0;
 		//printf("Checking for : %d/%d\n", beg_year, beg_month);
 		char namebuffer[32] = {'\0'};
-		sprintf(namebuffer, "./Log/%d/%d/differential", beg_year, beg_month);
+		sprintf(namebuffer, "./Log/%d/%d/changefile", beg_year, beg_month);
 		char *hash, *filename;
 		char *line;
 		size_t len=0;
