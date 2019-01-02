@@ -298,12 +298,14 @@ int add_file_to_tracked(char* directory){
 	fclose(dirs);
 
 	char temp[4096] = {'\0'};
+	//	Put current file version to vault
 	sprintf(temp, "cp %s %s", directory, "./vault");
 	system(temp);
 	int desc, save_result, stat;
 	char *buffer_why_not = (char*)malloc(sizeof(char) * (stringlen(actualpath) + 1)); //	Is it safe?
 	sprintf(buffer_why_not, "%s\n", actualpath);
 	desc = open("./config/dirs", O_RDWR|O_APPEND);
+	//	Append file to /config/dirs list
 	save_result = write(desc, buffer_why_not, strlen(buffer_why_not));
 	if(save_result < 0){
 		printf("%s Could not save to file\n", FAIL);
@@ -313,6 +315,8 @@ int add_file_to_tracked(char* directory){
 		}
 		return -1;
 	}
+	//	Already calculate first hash
+	call_calculate_script(actualpath, get_current_log_directory(), get_date_as_string());
 	if((stat = close(desc)) < 0)
 		return -1;
 	printf("Successfully appended %s to tracked file list.\n", directory);
