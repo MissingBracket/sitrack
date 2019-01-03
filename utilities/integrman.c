@@ -61,18 +61,12 @@ int sum_length(char* string){
 }
 void call_calculate_script(char* directory, char *output, char* timestamp){
 	char full_directory[4096] = {'\0'};
-	//printf("parameters:%s and %s\n",directory, output);
-
 	snprintf(full_directory, 4096, "./scripts/caansatofi %s %s/changefile %s", directory, output, timestamp);
-	//printf("Call script with parameter:\t %s\n", full_directory);
 	system(full_directory);
-
 }
 void call_rebuilder_script(char* vault, char* current, char* date, char* oper){
 	char full_directory[4096] = {'\0'};
-	//printf("parameters:%s and %s\n",directory, output);
 	snprintf(full_directory, 4096, "./scripts/sanachre %s %s %s %s", vault, current, date, oper);
-	//printf("Call script with parameter:\t %s\n", full_directory);
 	printf("call to %s\n", full_directory);
 	//system(full_directory);	
 }
@@ -83,12 +77,12 @@ void call_rebuilder_script_forward(char* vault, char* current, char* date){
 	call_rebuilder_script(vault, current, date, "ach");
 }
 
-void create_patch_for_file(char *file, char* date){
+void create_patch_for_file(char *file, char* date, char* op){
 	char vault_path[4096] = {'\0'};
 	char filepath[4096];
 	strcpy(filepath, file);
 	int len = 0;
-	snprintf(vault_path, 4096, "./scripts/sachanre %s %s %s %s", translate_to_vault_path(file), filepath, date, "chk");
+	snprintf(vault_path, 4096, "./scripts/sachanre %s %s %s %s", translate_to_vault_path(filepath), file, date, op);
 	system(vault_path);
 }
 char** parse_line_into_words(char* line, char*delim, int* len){

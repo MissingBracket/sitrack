@@ -22,7 +22,6 @@ int get_month(){
 	struct tm tm = *localtime(&t);
 	return (int)(tm.tm_mon+1);
 }
-
 int get_year(){
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);

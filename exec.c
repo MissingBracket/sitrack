@@ -194,7 +194,6 @@ void alter_int(int *k){
 
 //	That's where fun begins
 int main(int argc, char* argv[]){
-	
 	if(argc <2){
 		print_help();
 		return 0;

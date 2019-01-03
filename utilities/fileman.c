@@ -36,8 +36,6 @@ struct list *get_directories_from_custom_config(char * custom_config){
 	return directories;
 }
 
-
-
 void printfromfile(){
 	int desc = open(config_dir, O_RDONLY);
 	if(desc == -1){
@@ -375,8 +373,10 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 		else{
 			char* ts = get_date_as_string();
 			call_calculate_script(ptr->directory, output, get_date_as_string());
-			printf("ptr->directory = %s\n", ptr->directory);
-			create_patch_for_file(ptr->directory, ts);
+			create_patch_for_file(ptr->directory, ts, "chk");
+			create_patch_for_file(ptr->directory, ts, "ach");
+			//void call_rebuilder_script_forward(char* vault, char* current, char* date){
+			//printf("ptr->directory = %s\n", ptr->directory);
 			changes++;
 		}
 		pclose(pipe);
@@ -386,10 +386,20 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 	printf("\nFinished Calculating for %d entries with %d changes and %d files unmodified.\n", changes + n_changes, changes, n_changes);
 	return changes;
 }
+
 char* translate_to_vault_path(char* file){
+	char actualpath [4096+1];
+	char *ptr;
+
 	int len=0;
 	char *vault_filename = (char*)malloc(sizeof(char) * 2048);
 	char** filename = parse_line_into_words(file, "/", &len);
 	sprintf(vault_filename, "./vault/%s", filename[len-1]);
+	ptr = realpath(vault_filename, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return NULL;
+	}
+	strncpy(vault_filename, actualpath, 2048);
 	return vault_filename;
 }
