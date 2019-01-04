@@ -16,7 +16,7 @@ int get_day(){
 	struct tm tm = *localtime(&t);
 	return (int)tm.tm_mday;
 }
-
+//	Added comment
 int get_month(){
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
@@ -27,7 +27,6 @@ int get_year(){
 	struct tm tm = *localtime(&t);
 	return (int)(tm.tm_year + 1900);
 }
-//	comment
 char* get_date_as_string(){
 	time_t t = time(NULL);
 	const struct tm tim = *localtime(&t);
@@ -35,7 +34,7 @@ char* get_date_as_string(){
 	strftime(formatted_date, sizeof(struct tm) + 1, "%F-%s", &tim);
 	return formatted_date;
 }
-// another comment
+
 char* get_next_date(int year, int month){
 	int n_year = (month == 12 ? year+1 : year), 
 	n_month = (((month) % 12) + 1);
@@ -47,8 +46,8 @@ void get_next_date_to_variables(int *year, int *month){
 	*year = (*month == 12 ? (*year) +1 : *year), 
 	*month = (((*month) % 12) + 1);
 }
-time_t convert_date_to_seconds(int y, int mo, int d, int h, int mi){
-	struct tm given = { 0, mi, h, d, mo-1, y-1900 };
+time_t convert_date_to_seconds(int y, int mo, int d, int h, int mi, int s){
+	struct tm given = { s, mi, h, d, mo-1, y-1900 };
 	time_t seconds = mktime(&given);
 	return seconds;
 }
@@ -58,4 +57,14 @@ char* get_timestamp_as_string(){
 	char *formatted_date = (char*)malloc(sizeof(char) * 128);
 	sprintf(formatted_date, "%d", mktime(&tm));
 	return formatted_date;
+}
+time_t convert_date_string_to_seconds(char* string){
+	int param_beg_month = 0, 
+		param_beg_year = 0, 
+		param_beg_day = 0, 
+		param_beg_hour = 0, 
+		param_beg_minute = 0,
+		param_beg_second;
+		(void)sscanf(string, "%d-%d-%d-%d-%d-%d", &param_beg_year, &param_beg_month, &param_beg_day, &param_beg_hour, &param_beg_minute, &param_beg_second);
+	return convert_date_to_seconds(param_beg_year, param_beg_month, param_beg_day, param_beg_hour, param_beg_minute, param_beg_second);
 }

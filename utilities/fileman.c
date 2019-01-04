@@ -405,6 +405,63 @@ char* translate_to_vault_path(char* file){
 	return vault_filename;
 }
 
+char* get_file_hash_by_date(char* file, char* date){
+//	PATH MAX
+	char actualpath [4096+1];
+	char *ptr;
+	ptr = realpath(file, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return NULL;
+	}
+	time_t seconds_timestamp = convert_date_string_to_seconds(date);
+	//printf("searching for record: %s\n", actualpath);
+	int beg_month = 0, beg_year = 0;
+	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
+	char* last_modified = (char*)malloc(sizeof(char)*128);
+	while(beg_year <= get_year() && beg_month <= get_month()){
+		int failsafe = 0;
+		printf("Checking for : %d/%d\n", beg_year, beg_month);
+		char namebuffer[32] = {'\0'};
+		sprintf(namebuffer, "./Log/%d/%d/changefile", beg_year, beg_month);
+		char *hash, *filename;
+		char line[4096];
+		size_t len=0;
+		time_t timefromname, timefromargument;
+		if(access(namebuffer, F_OK) != -1){
+			
+			FILE* log_file = fopen(namebuffer, "r");
+			failsafe ++;
+			while(!feof(log_file)){
+				fscanf(log_file, "%s\n", line);
+				//printf("searching in : %s\n", line);
+				char **log_line = parse_line_into_words(line, ":", &failsafe);
+				//printf("filename = %s\n", log_line[FILENAME]);
+				if(compare_checksums(log_line[FILENAME], actualpath) == 1){
+					(void)sscanf(log_line[DATECHANGED], "%ld", &timefromname);
+					//(void)sscanf(seconds_timestamp, "%ld", &timefromargument);
+					//printf("%ld\n", timefromname);
+					//printf("comparing: %s > %s\n",log_line[DATECHANGED], convert_date_string_to_seconds(date));
+					strcpy(last_modified, log_line[HASH]);
+					//if(compare_checksums(log_line[DATECHANGED], date) > 0){
+					if(timefromname >= seconds_timestamp){
+						printf("%s\n", "reached end date");
+						return last_modified;
+					}
+					//printf("found: %s\n", log_line[DATECHANGED]);
+				}
+				failsafe++;
+				if(failsafe >= 1000)
+					break;
+			}
+			fclose(log_file);
+		}
+		get_next_date_to_variables(&beg_year, &beg_month);
+	}
+	//printf("Failed to find entry for %s\n", file);
+	return last_modified;
+}
+
 void rebuild_file_to_date(char* file, char* date){
 	//	date is end date
 	//	filename is taken from 
@@ -417,14 +474,9 @@ void rebuild_file_to_date(char* file, char* date){
 	to_date = (date != NULL);
 	time_t seconds_timestamp = 0;
 	char response;
-	int param_beg_month = 0, 
-		param_beg_year = 0, 
-		param_beg_day = 0, 
-		param_beg_hour = 0, 
-		param_beg_minute = 0;
+	
 	if(to_date > 0){
-		(void)sscanf(date, "%d-%d-%d-%d-%d", &param_beg_year, &param_beg_month, &param_beg_day, &param_beg_hour, &param_beg_minute);
-		seconds_timestamp = convert_date_to_seconds(param_beg_year, param_beg_month, param_beg_day+1, param_beg_hour, param_beg_minute);
+		seconds_timestamp = convert_date_string_to_seconds(date);
 		printf("date as seconds: %ld\n", seconds_timestamp);
 		if(seconds_timestamp < 0){
 			printf("Failed to parse timestamp. Should assume all changes and continue? [y/n]\n");
@@ -435,7 +487,9 @@ void rebuild_file_to_date(char* file, char* date){
 				return;
 		}
 	}
-
+	char datestring[128];
+	(void)sprintf(datestring, "%ld", seconds_timestamp);
+	
 	char actualpath [4096+1];
 	char *ptr;
 
@@ -446,7 +500,7 @@ void rebuild_file_to_date(char* file, char* date){
 	}
 
 	int beg_month = 0, beg_year = 0;
-		
+
 	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
 	
 	while(beg_year <= get_year() && beg_month <= get_month()) {
@@ -458,6 +512,7 @@ void rebuild_file_to_date(char* file, char* date){
 		size_t len=0;
 		int nameIndex;
 		size_t timefromname;
+		
 		if(access(namebuffer, F_OK) != -1){
 			
 			FILE* log_file = fopen(namebuffer, "r");
@@ -468,10 +523,6 @@ void rebuild_file_to_date(char* file, char* date){
 				if(compare_checksums(log_line[FILENAME], actualpath) == 1){
 					if(to_date > 0){
 						(void)sscanf(log_line[DATECHANGED], "%ld", &timefromname);
-						if(timefromname > seconds_timestamp){
-							printf("%s\n", "reached end date");
-							break;
-						}
 					}
 					changedates = list_insert(changedates, log_line[DATECHANGED]);
 				}
@@ -489,8 +540,81 @@ void rebuild_file_to_date(char* file, char* date){
 			create_patch_for_file(actualpath, iterator->directory, "rev");
 		iterator = iterator->next;
 	}
+	char pipe_to_md5[34];
+	sprintf(pipe_to_md5, "%s %s\0", "/bin/md5sum", actualpath);
+	FILE* pipe;
+	pipe = popen(pipe_to_md5, "r");
+	if(pipe == NULL){
+		printf("%s\n", "fail");
+	}
+	fgets(pipe_to_md5, sizeof(pipe_to_md5)-1, pipe);
+	
+	printf("Date received: %s\n", date);
+	printf("Date changed: %s\n", datestring);
+	if(compare_checksums(pipe_to_md5, get_file_hash_by_date(actualpath, get_previous_change_date(actualpath, datestring))) <= 0){
+		printf("INTEGRITY COMPROMISED ON FILE: %s\n", actualpath);
+		printf("%s != %s\n", pipe_to_md5, get_file_hash_by_date(actualpath, get_previous_change_date(actualpath, datestring)));
+	}
+	else{
+		printf("Equal, integrity retained. [%s]/[%s]\n", pipe_to_md5, get_previous_change_date(actualpath, get_previous_change_date(actualpath, datestring)));
+	}
+
+	fclose(pipe);
 	iterator = NULL;
 	changedates = list_clear(changedates);
 	printf("%s\n", "finished");
 
+}
+char* get_previous_change_date(char* file, char* date){
+	//	PATH MAX
+	char actualpath [4096+1];
+	char *ptr;
+	struct list * timestamps = NULL;
+	ptr = realpath(file, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return NULL;
+	}
+	time_t seconds_timestamp = convert_date_string_to_seconds(date);
+	int beg_month = 0, beg_year = 0;
+	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
+	char* last_modified = (char*)malloc(sizeof(char)*128);
+	while(beg_year <= get_year() && beg_month <= get_month()){
+		int failsafe = 0;
+		char namebuffer[32] = {'\0'};
+		sprintf(namebuffer, "./Log/%d/%d/changefile", beg_year, beg_month);
+		char *hash, *filename;
+		char line[4096];
+		size_t len=0;
+		if(access(namebuffer, F_OK) != -1){
+			
+			FILE* log_file = fopen(namebuffer, "r");
+			failsafe ++;
+			while(!feof(log_file)){
+				fscanf(log_file, "%s\n", line);
+				//printf("searching in : %s\n", line);
+				char **log_line = parse_line_into_words(line, ":", &failsafe);
+				if(compare_checksums(log_line[FILENAME], actualpath) == 1){
+					timestamps = list_insert(timestamps, log_line[DATECHANGED]);
+					//printf("comparing : %s - %s\n",log_line[DATECHANGED], date);
+					if(compare_checksums(log_line[DATECHANGED], date) == 1)
+						if(timestamps->next != NULL){
+							ptr = (char*)malloc(sizeof(char)*128);
+							strcpy(ptr, timestamps->next->directory);
+							return ptr;
+						}else{
+							ptr = (char*)malloc(sizeof(char)*128);
+							strcpy(ptr, timestamps->directory);
+							return ptr;
+						}
+				}
+				failsafe++;
+				if(failsafe >= 1000)
+					break;
+			}
+			fclose(log_file);
+		}
+		get_next_date_to_variables(&beg_year, &beg_month);
+	}
+	return last_modified;
 }

@@ -42,6 +42,7 @@ char* get_initial_file_hash(char* file);
 //	Fetch constant parameter by name
 char* get_program_parameter(char* param);
 char* get_file_hash_by_date(char* filename, char* date);
+char* get_previous_change_date(char* file, char* date);
 char* get_latest_file_hash(char* file);
 char* translate_to_vault_path(char* file);
 void rebuild_file_to_date(char* file, char* date);

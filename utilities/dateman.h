@@ -23,6 +23,6 @@ char* get_next_date(int year, int month);
 
 void get_next_date_to_variables(int *year, int *month);
 
-time_t convert_date_to_seconds(int y, int mo, int d, int h, int mi);
+time_t convert_date_to_seconds(int y, int mo, int d, int h, int mi, int s);
 
-int compare_timestamps(char* stamp1, char* stamp2);
+time_t convert_date_string_to_seconds(char* string);
