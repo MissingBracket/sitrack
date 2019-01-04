@@ -17,7 +17,12 @@ int get_year();
 
 char* get_date_as_string();
 
+char* get_timestamp_as_string();
+
 char* get_next_date(int year, int month);
 
 void get_next_date_to_variables(int *year, int *month);
-void something();
+
+time_t convert_date_to_seconds(int y, int mo, int d, int h, int mi);
+
+int compare_timestamps(char* stamp1, char* stamp2);

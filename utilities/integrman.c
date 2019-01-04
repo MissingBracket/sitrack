@@ -83,7 +83,8 @@ void create_patch_for_file(char *file, char* date, char* op){
 	strcpy(filepath, file);
 	int len = 0;
 	snprintf(vault_path, 4096, "./scripts/sachanre %s %s %s %s", translate_to_vault_path(filepath), file, date, op);
-	system(vault_path);
+	printf("patch received: %s\n", vault_path);
+	//system(vault_path);
 }
 char** parse_line_into_words(char* line, char*delim, int* len){
 	int size = 0;

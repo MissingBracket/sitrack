@@ -318,7 +318,7 @@ int add_file_to_tracked(char* directory){
 		return -1;
 	}
 	//	Already calculate first hash
-	call_calculate_script(actualpath, get_current_log_directory(), get_date_as_string());
+	call_calculate_script(actualpath, get_current_log_directory(), get_timestamp_as_string());
 	if((stat = close(desc)) < 0)
 		return -1;
 	printf("Successfully appended %s to tracked file list.\n", directory);
@@ -371,8 +371,9 @@ int save_calculation_for_files(char *output, char* input, int n, int c){
 			n_changes++;
 		}
 		else{
-			char* ts = get_date_as_string();
-			call_calculate_script(ptr->directory, output, get_date_as_string());
+			char* ts = get_timestamp_as_string();
+			//get_date_as_string();
+			call_calculate_script(ptr->directory, output, ts);
 			create_patch_for_file(ptr->directory, ts, "chk");
 			create_patch_for_file(ptr->directory, ts, "ach");
 			//void call_rebuilder_script_forward(char* vault, char* current, char* date){
@@ -402,4 +403,94 @@ char* translate_to_vault_path(char* file){
 	}
 	strncpy(vault_filename, actualpath, 2048);
 	return vault_filename;
+}
+
+void rebuild_file_to_date(char* file, char* date){
+	//	date is end date
+	//	filename is taken from 
+	char* timestamp,
+		* filename;
+	char patch_name[4096];
+	struct list * changedates,
+				* iterator;
+	int to_date = 0;	
+	to_date = (date != NULL);
+	time_t seconds_timestamp = 0;
+	char response;
+	int param_beg_month = 0, 
+		param_beg_year = 0, 
+		param_beg_day = 0, 
+		param_beg_hour = 0, 
+		param_beg_minute = 0;
+	if(to_date > 0){
+		(void)sscanf(date, "%d-%d-%d-%d-%d", &param_beg_year, &param_beg_month, &param_beg_day, &param_beg_hour, &param_beg_minute);
+		seconds_timestamp = convert_date_to_seconds(param_beg_year, param_beg_month, param_beg_day+1, param_beg_hour, param_beg_minute);
+		printf("date as seconds: %ld\n", seconds_timestamp);
+		if(seconds_timestamp < 0){
+			printf("Failed to parse timestamp. Should assume all changes and continue? [y/n]\n");
+			scanf("%c", &response);
+			if(response == 'y' || response == 'Y')
+				to_date = 0;
+			else
+				return;
+		}
+	}
+
+	char actualpath [4096+1];
+	char *ptr;
+
+	ptr = realpath(file, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return;
+	}
+
+	int beg_month = 0, beg_year = 0;
+		
+	(void)sscanf(get_program_parameter("record_begin"), "%d/%d/", &beg_year, &beg_month);
+	
+	while(beg_year <= get_year() && beg_month <= get_month()) {
+		int failsafe = 0;
+		char namebuffer[32] = {'\0'};
+		sprintf(namebuffer, "./Log/%d/%d/changefile", beg_year, beg_month);
+		char *hash;
+		char line[4096];
+		size_t len=0;
+		int nameIndex;
+		size_t timefromname;
+		if(access(namebuffer, F_OK) != -1){
+			
+			FILE* log_file = fopen(namebuffer, "r");
+			failsafe ++;
+			while(!feof(log_file)){
+				fscanf(log_file, "%s\n", line);
+				char **log_line = parse_line_into_words(line, ":", &failsafe);
+				if(compare_checksums(log_line[FILENAME], actualpath) == 1){
+					if(to_date > 0){
+						(void)sscanf(log_line[DATECHANGED], "%ld", &timefromname);
+						if(timefromname > seconds_timestamp){
+							printf("%s\n", "reached end date");
+							break;
+						}
+					}
+					changedates = list_insert(changedates, log_line[DATECHANGED]);
+				}
+				failsafe++;
+				if(failsafe >= 1000)
+					break;
+			}
+			fclose(log_file);
+		}
+		get_next_date_to_variables(&beg_year, &beg_month);
+	}
+	iterator = changedates;
+	while(iterator != NULL){
+		if(iterator->next != NULL)
+			create_patch_for_file(actualpath, iterator->directory, "rev");
+		iterator = iterator->next;
+	}
+	iterator = NULL;
+	changedates = list_clear(changedates);
+	printf("%s\n", "finished");
+
 }

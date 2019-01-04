@@ -18,6 +18,7 @@ if [ ! -f $1 ]; then
 	exit 1
 fi
 if [[ $4 == "rev" ]]; then
+	cd ./vault/
 	patch -R < $OUTFILE
 elif [[ $4 == "chk" ]]; then
 	diff -u $1 $2 > $OUTFILE

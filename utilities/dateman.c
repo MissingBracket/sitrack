@@ -27,13 +27,15 @@ int get_year(){
 	struct tm tm = *localtime(&t);
 	return (int)(tm.tm_year + 1900);
 }
+//	comment
 char* get_date_as_string(){
 	time_t t = time(NULL);
 	const struct tm tim = *localtime(&t);
 	char *formatted_date = (char*)malloc(sizeof(struct tm) + 1);
-	strftime(formatted_date, sizeof(struct tm) + 1, "%F-%S", &tim);
+	strftime(formatted_date, sizeof(struct tm) + 1, "%F-%s", &tim);
 	return formatted_date;
 }
+// another comment
 char* get_next_date(int year, int month){
 	int n_year = (month == 12 ? year+1 : year), 
 	n_month = (((month) % 12) + 1);
@@ -44,4 +46,16 @@ char* get_next_date(int year, int month){
 void get_next_date_to_variables(int *year, int *month){
 	*year = (*month == 12 ? (*year) +1 : *year), 
 	*month = (((*month) % 12) + 1);
+}
+time_t convert_date_to_seconds(int y, int mo, int d, int h, int mi){
+	struct tm given = { 0, mi, h, d, mo-1, y-1900 };
+	time_t seconds = mktime(&given);
+	return seconds;
+}
+char* get_timestamp_as_string(){
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	char *formatted_date = (char*)malloc(sizeof(char) * 128);
+	sprintf(formatted_date, "%d", mktime(&tm));
+	return formatted_date;
 }
