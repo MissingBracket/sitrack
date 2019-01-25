@@ -178,7 +178,18 @@ char* get_program_parameter(char* param){
 	fclose(constants);
 	return NULL;
 }
-
+char* get_actual_file_path(char* file){
+	printf("rec : %s\n", file);
+	char *actualpath = (char*)malloc(sizeof(char)*(4096+1));
+	char *ptr;
+	int found = 0;
+	ptr = realpath(file, actualpath);
+	if(ptr == NULL){
+		printf("Specified file doesn't exist.\n");
+		return NULL;
+	}
+	return actualpath;
+}
 char* get_latest_file_hash(char* file){
 	//	PATH MAX
 	char actualpath [4096+1];
@@ -393,7 +404,7 @@ char* translate_to_vault_path(char* file){
 	char *ptr;
 
 	int len=0;
-	char *vault_filename = (char*)malloc(sizeof(char) * 2048);
+	char *vault_filename = (char*)malloc(sizeof(char) * 4097);
 	char** filename = parse_line_into_words(file, "/", &len);
 	sprintf(vault_filename, "./vault/%s", filename[len-1]);
 	ptr = realpath(vault_filename, actualpath);
@@ -401,7 +412,7 @@ char* translate_to_vault_path(char* file){
 		printf("Specified file doesn't exist.\n");
 		return NULL;
 	}
-	strncpy(vault_filename, actualpath, 2048);
+	strncpy(vault_filename, actualpath, 4097);
 	return vault_filename;
 }
 
@@ -463,6 +474,7 @@ char* get_file_hash_by_date(char* file, char* date){
 }
 
 void rebuild_file_to_date(char* file, char* date){
+	printf("args : %s %s\n", file, date);
 	//	date is end date
 	//	filename is taken from 
 	char* timestamp,
@@ -534,6 +546,15 @@ void rebuild_file_to_date(char* file, char* date){
 		}
 		get_next_date_to_variables(&beg_year, &beg_month);
 	}
+
+	//	Copy file
+	char backup[4096];
+	char actualpath_copy[4096];
+	strcpy(actualpath_copy, actualpath);
+	char *vpath = translate_to_vault_path(actualpath_copy);
+	sprintf(backup, "cp %s %s_copy", vpath, vpath);
+	printf("copying : %s\n", backup);
+	system(vpath);
 	iterator = changedates;
 	while(iterator != NULL){
 		if(iterator->next != NULL)
@@ -558,7 +579,10 @@ void rebuild_file_to_date(char* file, char* date){
 	else{
 		printf("Equal, integrity retained. [%s]/[%s]\n", pipe_to_md5, get_previous_change_date(actualpath, get_previous_change_date(actualpath, datestring)));
 	}
-
+	//	Restore file
+	sprintf(backup, "mv %s_copy %s", vpath, vpath);
+	printf("copying : %s\n", backup);
+	system(vpath);
 	fclose(pipe);
 	iterator = NULL;
 	changedates = list_clear(changedates);

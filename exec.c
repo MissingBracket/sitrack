@@ -14,8 +14,8 @@
 //#include "./utilities/dateman.h"
 #include "./utilities/integrman.h"
 #include "./utilities/fileman.h"
-const float program_version = 0.65;
-const char* details = "Ready to execute basic tasks. WIP, though.";
+const float program_version = 1.00;
+const char* details = "Fully functional.";
 
 const char* script_dir = "./scripts/";
 /*
@@ -35,18 +35,15 @@ void print_help(){
 	printf("Usage:\n");
 	printf("oversser [Mainparam][params]\n");
 	printf("Available parameters:\n");
-	printf("\t-R\tRecalculate current integrity\n");
-	printf("\t-d [directory]\tcalculate Hashes only in given directory\n");
+	printf("\t-R\tRecalculate current integrity for all files post INSTALLATION\n");
+	printf("\t-d [file]\tcalculate Hash only for given file\n");
 	printf("\t-n\tDon't save hashes and print them to screen\n");
 	printf("\t-c\tRecalculate hashes and compare them with current\n");
 	printf("\t-T\tAdd new file to be tracked\n");
 	printf("\t-d [directory]\tAdd entire given directory to tracked list\n");
-	printf("\t-n\tPrint hashes of added items to screen\n");
-	printf("\t-c\tImmediately calculate hashes for added items\n");
-	printf("\t-U\tUntrack file\n");
-	printf("\t-d [directory]\tUntrack all files in given directory\n");
-	printf("\t-n\tPLACEHOLDER\n");
-	printf("\t-c\tRecalculate hashes and save them for the last time\n");
+	printf("\t-n\tRemove file from tracked list\n");
+	printf("\t-U [file]\tRecalculate current integrity for a file post DEINSTALLATION\n");
+	printf("\t-d [file] [date]\tSearch for integrity compromitation on given file to given date\n");
 }
 
 void calculate_and_print(char *dir){
@@ -92,8 +89,10 @@ char* constr(char* a, char* b){
 int parse_arguments(char *argv[], int argc){
 int switches[switches_available] = {0};
 char *READvalue = NULL, *TRACKvalue = NULL, *UNTRACKvalue = NULL;
+//char *filepath = NULL;
+char filepath[4096] = {'\0'};
 int c;
-
+char FILENAME_arg[32] = {'\0'};
 opterr = 0;
 int offset=0;
 
@@ -113,6 +112,8 @@ int offset=0;
 			offset = SWITCH_TRACK;
 		break;
 		case 'U':
+			//strncpy()
+			//strcpy(filepath, get_actual_file_path(optarg));
 			switches[SWITCH_UNTRACK] = 1;
 			offset = SWITCH_UNTRACK;
 		break;
@@ -136,6 +137,13 @@ int offset=0;
 				break;
 				case SWITCH_UNTRACK:
 					UNTRACKvalue = optarg;
+					strcpy(filepath, get_actual_file_path(UNTRACKvalue));
+					if(optind < argc && *argv[optind] != '-'){
+						rebuild_file_to_date(filepath, argv[optind]);
+					}
+					else {
+						print_help();
+					}
 					offset = 0;
 				break;
         }
@@ -148,13 +156,10 @@ int offset=0;
 
     if(switches[SWITCH_READ] > 0){
     	if(READvalue != NULL){
-    		//print_from_pointer(READvalue);
-			//	n
     		if(switches[SWITCH_READ + 1] > 0)
     			get_latest_file_hash(READvalue);
     		else
     			save_calculation_for_files(get_current_log_directory(), READvalue, switches[2], switches[3]);
-
     	}
     	else
     		save_calculation_for_files(get_current_log_directory(), NULL, switches[2], switches[3]);
@@ -166,9 +171,6 @@ int offset=0;
     	}
     	add_file_to_tracked(TRACKvalue);
     }
-	if(switches[SWITCH_UNTRACK] > 0){
-
-	}
     return 0;
 }
 
@@ -178,22 +180,9 @@ void log_date(){
 	system("date >> ./Log/Overseer.log");
 }
 
-//	Prints functionalities that need to be implemented [for me, so i can see what needs to be done]
-void tasks(){
-	printf("%s\n", "********************");
-	char* tasks[] = {"Write scripts"};
-	int tasknum = 1;
-	for(int i =0; i <tasknum; i++){
-		printf("%s\n", tasks[i]);
-	}
-	printf("%s\n", "********************");
-}
-void alter_int(int *k){
-	*k = 15;
-}
-
 //	That's where fun begins
 int main(int argc, char* argv[]){
+
 	if(argc <2){
 		print_help();
 		return 0;

@@ -46,3 +46,4 @@ char* get_previous_change_date(char* file, char* date);
 char* get_latest_file_hash(char* file);
 char* translate_to_vault_path(char* file);
 void rebuild_file_to_date(char* file, char* date);
+char* get_actual_file_path(char* file);

@@ -16,7 +16,7 @@ int get_day(){
 	struct tm tm = *localtime(&t);
 	return (int)tm.tm_mday;
 }
-//	Added comment
+//	Comment added
 int get_month(){
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
@@ -34,7 +34,7 @@ char* get_date_as_string(){
 	strftime(formatted_date, sizeof(struct tm) + 1, "%F-%s", &tim);
 	return formatted_date;
 }
-
+//	More comments
 char* get_next_date(int year, int month){
 	int n_year = (month == 12 ? year+1 : year), 
 	n_month = (((month) % 12) + 1);
@@ -55,7 +55,7 @@ char* get_timestamp_as_string(){
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
 	char *formatted_date = (char*)malloc(sizeof(char) * 128);
-	sprintf(formatted_date, "%d", mktime(&tm));
+	sprintf(formatted_date, "%ld", mktime(&tm));
 	return formatted_date;
 }
 time_t convert_date_string_to_seconds(char* string){
